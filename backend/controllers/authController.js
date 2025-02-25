@@ -15,14 +15,14 @@ export const signupController = async (req, res) => {
     const { success } = signupSchema.safeParse(body);
 
     if (!success) {
-      return res.json({
+      res.json({
         message: "email not valid/incorrect inputs",
       });
     }
 
     const emailExists = await User.findOne({ username: body.username });
     if (emailExists) {
-      return res.json({ message: "Email already exists/incorrect inputs" });
+      res.json({ message: "Email already exists/incorrect inputs" });
     }
 
     const user = await User.create(body);
@@ -54,7 +54,7 @@ export const signController = async () => {
     const { success } = signInSchema.safeParse(body);
 
     if (!success) {
-      return res.json({
+      res.json({
         message: "email not valid/incorrect inputs",
       });
     }
@@ -64,7 +64,7 @@ export const signController = async () => {
     });
 
     if (!emailExists) {
-      return res.json({
+      res.json({
         message: "Invalid email/incorrect inputs",
       });
     }
@@ -75,9 +75,77 @@ export const signController = async () => {
         message: "Invalid email/incorrect inputs",
       });
     }
-    
+
     res.status(201).json({
       message: "Login Successfully",
     });
   } catch (error) {}
+};
+
+export const updateUser = async () => {
+  try {
+    const updateUserSchema = zod.object({
+      firstName: zod.string().optional(),
+      lastName: zod.string().optional(),
+      password: zod.string().optional(),
+    });
+
+    const body = req.body;
+
+    const { success } = updateUserSchema.safeParse(body);
+
+    if (!success) {
+      res.status(413).json({
+        message: "email not valid/incorrect inputs",
+      });
+    }
+
+    const updateUser = await User.updateOne(req.body, {
+      id: req.userId,
+    });
+
+    res.status(201).json({
+      message: "user updated successfully",
+      updateUser,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(403).json({
+      message: "error in update user controller",
+    });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const filter = req.query.filter || "";
+
+    const users = User.find({
+      $or: [
+        {
+          firstName: {
+            $regex: filter,
+          },
+        },
+        {
+          lastName: {
+            $regex: filter,
+          },
+        },
+      ],
+    });
+    res.json({
+      user: users.map((user) => ({
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        _id: user._id,
+      })),
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(403).json({
+      message: "error in get all users controller",
+    });
+  }
 };
