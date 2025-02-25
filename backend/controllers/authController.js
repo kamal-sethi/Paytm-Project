@@ -1,6 +1,7 @@
 import User from "../model/user.model";
 import zod from "zod";
 import jwt from "jsonwebtoken";
+import Account from "../model/account.model";
 export const signupController = async (req, res) => {
   try {
     const signupSchema = zod.object({
@@ -25,7 +26,20 @@ export const signupController = async (req, res) => {
       res.json({ message: "Email already exists/incorrect inputs" });
     }
 
-    const user = await User.create(body);
+    const user = await User.create({
+      username: req.body.username,
+      password: req.body.password,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+    });
+
+    const userId = user._id;
+
+    await Account.create({
+      userId,
+      balance: 1 + Math.random() * 1000,
+    });
+
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
 
     return res.status(201).json({
