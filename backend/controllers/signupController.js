@@ -40,3 +40,44 @@ export const signupController = async (req, res) => {
     });
   }
 };
+
+export const signController = async () => {
+  try {
+    const signInSchema = zod.object({
+      username: zod.string(),
+
+      password: zod.string(),
+    });
+
+    const body = req.body;
+
+    const { success } = signInSchema.safeParse(body);
+
+    if (!success) {
+      return res.json({
+        message: "email not valid/incorrect inputs",
+      });
+    }
+
+    const emailExists = await User.findOne({
+      username: body.username,
+    });
+
+    if (!emailExists) {
+      return res.json({
+        message: "Invalid email/incorrect inputs",
+      });
+    }
+
+    const passwordMatched = emailExists.password === body.password;
+    if (!passwordMatched) {
+      return res.json({
+        message: "Invalid email/incorrect inputs",
+      });
+    }
+    
+    res.status(201).json({
+      message: "Login Successfully",
+    });
+  } catch (error) {}
+};
