@@ -1,4 +1,5 @@
-import Account from "../model/account.model";
+import Account from "../model/account.model.js";
+import mongoose from "mongoose";
 
 export const getBalance = async (req, res) => {
   try {
@@ -7,18 +8,19 @@ export const getBalance = async (req, res) => {
 
     return res.status(200).json({
       message: "balance fetched successfully",
-      balance: Account.balance,
+      balance: account.balance,
     });
   } catch (error) {
+    console.log(error);
     return res.status(403).json({
       message: "error in get balance controller",
     });
   }
 };
 
-export const transferMoney = async () => {
+export const transferMoney = async (req, res) => {
   try {
-    const session = mongoose.startSession();
+    const session = await mongoose.startSession();
 
     session.startTransaction();
 
@@ -26,16 +28,16 @@ export const transferMoney = async () => {
     const account = await Account.findOne({ userId: req.userId }).session(
       session
     );
-
-    if (!account || !account.balance < amount) {
+    console.log(account);
+    if (!account || account.balance < amount) {
       await session.abortTransaction();
       return res.status(400).json({
         message: "Insufficient Balance",
       });
     }
 
-    const toAccount = await Account.findOne({ userId: To }.session());
-
+    const toAccount = await Account.findOne({ userId: To }).session();
+    console.log(toAccount);
     if (!toAccount) {
       await session.abortTransaction();
       return res.status(400).json({
@@ -57,7 +59,7 @@ export const transferMoney = async () => {
       message: "Transfer successful",
     });
   } catch (error) {
-    console.log("error in transfer money controller");
+    console.log(error);
     res.status(403).json({
       message: "Error in transfer money controller",
     });

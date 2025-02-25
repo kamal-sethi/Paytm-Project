@@ -1,17 +1,17 @@
 import express from "express";
 import {
-    getAllUsers,
-  signController,
+  getAllUsers,
+  signInController,
   signupController,
   updateUser,
-} from "../controllers/authController";
-import { authMiddleware } from "../middleware/auth";
+} from "../controllers/authController.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/signup", signupControllerController);
-router.post("signin", signController);
+router.post("/signup", signupController);
+router.post("/signin", signInController);
 router.put("/update", authMiddleware, updateUser);
-router.get('all-users',authMiddleware,getAllUsers)
+router.get("/all-users", authMiddleware, getAllUsers);
 
 export default router;

@@ -1,7 +1,7 @@
-import User from "../model/user.model";
+import User from "../model/user.model.js";
 import zod from "zod";
 import jwt from "jsonwebtoken";
-import Account from "../model/account.model";
+import Account from "../model/account.model.js";
 export const signupController = async (req, res) => {
   try {
     const signupSchema = zod.object({
@@ -41,6 +41,7 @@ export const signupController = async (req, res) => {
     });
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+    res.setHeader("Authorization", `Bearer ${token}`);
 
     return res.status(201).json({
       message: "New user created",
@@ -55,11 +56,10 @@ export const signupController = async (req, res) => {
   }
 };
 
-export const signController = async () => {
+export const signInController = async (req, res) => {
   try {
     const signInSchema = zod.object({
       username: zod.string(),
-
       password: zod.string(),
     });
 
@@ -73,27 +73,24 @@ export const signController = async () => {
       });
     }
 
-    const emailExists = await User.findOne({
+    const user = await User.findOne({
       username: body.username,
+      password: body.password,
     });
 
-    if (!emailExists) {
+    if (user) {
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+      res.setHeader("Authorization", `Bearer ${token}`);
       res.json({
-        message: "Invalid email/incorrect inputs",
+        message: "login successful",
+        token: token,
       });
+    } else {
+      return res.json("error while login");
     }
-
-    const passwordMatched = emailExists.password === body.password;
-    if (!passwordMatched) {
-      return res.json({
-        message: "Invalid email/incorrect inputs",
-      });
-    }
-
-    res.status(201).json({
-      message: "Login Successfully",
-    });
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 export const updateUser = async () => {
