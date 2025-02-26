@@ -19,7 +19,10 @@ const Signup = () => {
             <Input label={"Password"} placeholder={"******"} />
             <Button label={"Signup"} />
             <div className="m-3">
-              Already have an account? <Link to="/signin" className="underline">Sign in</Link>
+              Already have an account?{" "}
+              <Link to="/signin" className="underline">
+                Sign in
+              </Link>
             </div>
           </div>
         </div>
